@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<!-- HTML5 Hello world by kirupa - http://www.kirupa.com/html5/getting_your_feet_wet_html5_pg1.htm -->
+<html lang="en-us">
+
+<head>
+<meta charset="utf-8">
+<title>Hello...</title>
+<style type="text/css">
+#mainContent {
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: xx-large;
+	font-weight: bold;
+	background-color: #E3F0FB;
+	border-radius: 4px;
+	padding: 10px;
+	text-align: center;
+}
+
+
+</style>
+</head>
+
+<body>
+	<pre>
+		Here is the programming challenge we would wish you to solve: Create a 1-minute delayed feed of the USD/JPY.
+
+		To do this, please do the following:
+
+		1. Connect to the Binary.com Websockets API to retrieve a live data feed of the USD/JPY exchange rate.
+		2. For every new tick that comes in, print (1) that tick, and (2) the tick that occurred 1 minute before.
+
+		Instructions:
+		1. To access the API, please view https://developers.binary.com
+		2. You may use any programming language of your choice.
+		3. Please try to complete your work within 90 minutes.
+		4. Feel free to ask questions using this chat box.
+	</pre>
+<div id="mainContent">
+    <div id="output"></div>
+</div>
+
+
+<script> 
+ 
+ 
+ function SocketBuffer(socket, delay, ontick) {
+    var messages = [], tickInterval;
+
+    socket.onmessage = function(msg) {
+        messages.push( JSON.parse(msg.data) );
+        console.log(msg.data);
+    };
+
+    function tick() {
+        if (typeof ontick !== "function") return;
+        ontick( messages.splice(0) );
+    }
+
+    this.pause = function () {
+        tickInterval = clearInterval(tickInterval);
+    };
+    this.run = function () {
+        if (tickInterval) return;
+        tickInterval = setInterval(tick, delay * 1000);
+        tick();
+    };
+    this.run();
+}
+
+function log(s) {
+   var output = document.getElementById("output");
+   var p = document.createElement("p");
+   p.style.wordWrap = "break-word";
+   p.textContent = s;
+      output.appendChild(p);
+      // Also log information on the javascript console
+      console.log(s);
+ }
+ 
+
+var link = new WebSocket('wss://ws.binaryws.com/websockets/v3');
+link.onopen = function (evt) {
+    this.send( JSON.stringify({ticks:'frxUSDJPY'}) );
+};
+
+var linkBuf = new SocketBuffer(link, 60, function (newMessages) {
+    log(newMessages);
+});
+
+linkBuf.pause();
+linkBuf.run();
+
+
+</script>
+</body>
+</html>
